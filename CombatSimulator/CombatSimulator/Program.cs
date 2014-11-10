@@ -61,12 +61,16 @@ namespace CombatSimulator
                 string fistDesc = "Fists. You were never trained to fight with your fists. While\naccurate with them, you " +
                                   "dont punch very hard.";
                 string bowDesc = "Bow and arrow. Your weapon of choice. Deals high damage and is\nsomewhat accurate.";
+                string gunDesc = "Strange metallic tube with stuff on it. What is this device?"; //Cheat.
+
+                string[] gunVerbs = { "straight shoot", "pop a cap in", "blast away" }; //Cheat.
 
                 // Weapon object parameters: name, minimum damage, maximum damage, miss chance, array of verbs used on hit.
                 Weapon heavySword = new Weapon("heavy sword", 35, 45, 70, "destroy rip gore wound sever tear".Split(' '), heavySwordDesc);
                 Weapon knife = new Weapon("knife", 5, 20, 15, "prick stick pierce puncture".Split(' '), knifeDesc);
                 Weapon fist = new Weapon("fist", 1, 5, 5, "slap biff clip strike slug punch".Split(' '), fistDesc);
                 Weapon bow = new Weapon("bow and arrow", 15, 30, 20, "shoot nail bullseye gouge pin".Split(' '), bowDesc);
+                Weapon gun = new Weapon("strange object", 100, 1000, 50, gunVerbs, gunDesc); //Cheat.
 
                 bool fireUsed = false; //Will be set to True when Fire Powder is used.
                 bool fireDropped = false; //Will be set to true upon first player attack or location change.
@@ -230,7 +234,13 @@ namespace CombatSimulator
                                         {
                                             Console.Clear();
                                             Console.Write("\nYou wait to see what the intruder does. You see her move " +
-                                                "closer.\n\nWhat do you do?\n\n1. Keep waiting. She may not see you.\n2. " +
+                                                "closer.\n\nWhat do you do?\n\n1. Keep waitin");
+                                            Console.ForegroundColor = ConsoleColor.White;
+
+                                            Console.Write("g");
+
+                                            Console.ResetColor();
+                                            Console.Write(". She may not see you.\n2. " +
                                                 "Throw the covers on her.\n\n(1, 2?)");
 
                                             input = Console.ReadKey().KeyChar;
@@ -240,12 +250,19 @@ namespace CombatSimulator
                                                 case '1': //----Player waits
                                                     playerMessage = "You can't risk a confrontation. You wait. The assassin " +
                                                         "suddenly jumps forward,\ndrawing a sword.";
+
+                                                    if (houseHas.Contains(gun))
+                                                        playerMessage += " As she leaps, you see a strange metal device falls out of her\nrobes!";
                                                     
                                                     gameState = 1;
                                                     break;
 
                                                 case '2': //----Player throws cover on assassin.
                                                     gameState = 4;
+                                                    break;
+
+                                                case 'G': //----Cheat code. Assassin drops a gun. See gamestate 4.
+                                                    if(!houseHas.Contains(gun)) houseHas.Add(gun);
                                                     break;
                                             }
                                         } while (input != '1' && input != '2'); // Loops until invalid input is recieved.
@@ -261,8 +278,10 @@ namespace CombatSimulator
 
                             blindedTime = 2;
 
-                            Console.Write("You throw your covers on the intruder. She rips at the covers with her sword.\n"+
-                                "You have a precious free second to act.\n\nDefend yourself!\n\n(Press any key to continue.) ");
+                            Console.Write("You throw your covers on the intruder. She rips at the covers with her sword. ");
+                            if(houseHas.Contains(gun)) Console.Write("\nA strange looking object flies out of her robes as she struggles.");
+                            Console.Write("\nYou have a precious free second to act.\n\nDefend yourself!\n\n" +
+                            "(Press any key to continue.) ");
                             Console.ReadKey();
 
                             gameState = 5;
@@ -332,7 +351,7 @@ namespace CombatSimulator
                                         enemyHealth -= playerWeapon.calcDamage(out playerMessage, 0);
                                         playerMessage += "\nThe assassin can't dodge while blinded!";
                                     }
-                                    else if (blindedTime == 0 && playerWeapon == bow)
+                                    else if (blindedTime == 0 && (playerWeapon == bow || playerWeapon == gun))
                                     {
                                         //Player can hit enemy with bow even if not blinded.
                                         playerHealth -= calcEnemyDamage(out enemyMessage, true, enemyMissChance);
